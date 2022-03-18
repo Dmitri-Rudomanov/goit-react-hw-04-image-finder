@@ -6,13 +6,10 @@ const modalRoot = document.querySelector('#modal-root');
 
 export default function Modal({ largeImage, onClose }) {
   useEffect(() => {
-    console.log('Modal componentDidMount');
     window.addEventListener('keydown', handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    console.log('Modal componentWillUnmount');
-    return window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   });
 
   const handleKeyDown = e => {
