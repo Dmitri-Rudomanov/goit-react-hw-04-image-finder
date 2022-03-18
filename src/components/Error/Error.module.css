@@ -1,0 +1,13 @@
+.Error{
+    display: block;
+    text-align: center;
+    padding: 20px;
+
+}
+.Text{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 32px;
+    color: blue;
+    font-weight: bold;
+    text-transform: uppercase;
+}
