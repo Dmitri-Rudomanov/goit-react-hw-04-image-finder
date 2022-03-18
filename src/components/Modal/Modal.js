@@ -14,8 +14,6 @@ export default function Modal({ largeImage, onClose }) {
 
   const handleKeyDown = e => {
     if (e.code === 'Escape') {
-      console.log('Нажали ESC, нужно закрыть модалку');
-
       onClose();
     }
   };
