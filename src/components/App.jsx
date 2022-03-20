@@ -28,6 +28,7 @@ export default function App() {
       return;
     }
     onFetchImg();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, page]);
 
   const handleGalleryImg = fullImgUrl => {
