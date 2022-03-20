@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Searchbar from './Searchbar/Searchbar.js';
 import ImageGallery from './ImageGallery/ImageGallery.js';
 import pixabayAPI from '../services/pixabayApi.js';
@@ -10,96 +10,71 @@ import s from './App.module.css';
 import { ToastContainer } from 'react-toastify';
 import { toast } from 'react-toastify';
 
-class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    isLoading: null,
-    showModal: null,
-    largeImg: '',
-    error: null,
-    showMore: true,
+export default function App() {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(null);
+  const [showModal, setShowModal] = useState(null);
+  const [largeImg, setLargeImg] = useState('');
+  const [showMore, setShowMore] = useState(true);
+
+  const onBtnClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  onBtnClick = () => {
-    this.setState({ page: this.state.page + 1 });
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.onFetchImg();
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-  }
+    onFetchImg();
+  }, [query, page]);
 
-  handleGalleryImg = fullImgUrl => {
-    this.setState({
-      largeImg: fullImgUrl,
-      showModal: true,
+  const handleGalleryImg = fullImgUrl => {
+    setLargeImg(fullImgUrl);
+    setShowModal(true);
+  };
+
+  const toggleModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const onFetchImg = () => {
+    setIsLoading(true);
+    pixabayAPI.fetchGallery(query, page).then(({ hits, totalHits }) => {
+      setImages([...images, ...hits]);
+      setShowMore(true);
+      setIsLoading(false);
+      if (hits.length >= totalHits && totalHits !== 0) {
+        toast.warning('Sorry,you`ve reach the end of search result');
+        setShowMore(false);
+      }
     });
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const queryChange = query => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
   };
 
-  queryChange = query => {
-    this.setState({ query });
-    this.setState({ page: 1, images: [] });
-  };
-
-  onFetchImg = () => {
-    this.setState({ isLoading: true });
-    pixabayAPI
-      .fetchGallery(this.state.query, this.state.page)
-      .then(({ hits, totalHits }) => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          isLoading: false,
-        }));
-        if (this.state.images.length === 0) {
-          this.setState({ error: 'true' });
-        }
-        if (this.state.images.length >= totalHits) {
-          toast.warning('Sorry,you`ve reach the end of search result');
-          this.setState({ showMore: false });
-        }
-      });
-  };
-
-  render() {
-    const { showModal, isLoading, largeImg, images, error, query, showMore } =
-      this.state;
-    const showMoreCheck = images.length !== 0 && !isLoading && showMore;
-
-    return (
-      <div>
-        <Searchbar onSubmit={this.queryChange} />
-        <div className={s.App}>
-          {showModal && (
-            <Modal largeImage={largeImg} onClose={this.toggleModal} />
-          )}
-          <ImageGallery
-            Images={this.state.images}
-            onImgClick={this.handleGalleryImg}
+  const showMoreCheck = images.length !== 0 && !isLoading && showMore;
+  const errorCheck = images.length === 0 && query !== '' && !isLoading;
+  return (
+    <div>
+      <Searchbar onSubmit={queryChange} />
+      <div className={s.App}>
+        {showModal && <Modal largeImage={largeImg} onClose={toggleModal} />}
+        <ImageGallery Images={images} onImgClick={handleGalleryImg} />
+        {isLoading && <Loader />}
+        {showMoreCheck && <Button onClick={onBtnClick} />}
+        {errorCheck && (
+          <Error
+            message={`Sorry, There is no picture matching search query: ${query}`}
           />
-          {this.state.isLoading && <Loader />}
-          {showMoreCheck && <Button onClick={this.onBtnClick} />}
-          {error && (
-            <Error
-              message={`Sorry, There is no picture matching search query: ${query}`}
-            />
-          )}
-        </div>
-        <ToastContainer autoClose={2500} />
+        )}
       </div>
-    );
-  }
+      <ToastContainer autoClose={2500} />
+    </div>
+  );
 }
-
-export default App;
