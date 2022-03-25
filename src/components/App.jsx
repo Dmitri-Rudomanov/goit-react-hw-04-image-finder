@@ -44,9 +44,11 @@ export default function App() {
     setIsLoading(true);
     pixabayAPI.fetchGallery(query, page).then(({ hits, totalHits }) => {
       setImages([...images, ...hits]);
+      let check = images.length;
+      check += hits.length;
       setShowMore(true);
       setIsLoading(false);
-      if (hits.length >= totalHits && totalHits !== 0) {
+      if (check >= totalHits && totalHits !== 0) {
         toast.warning('Sorry,you`ve reach the end of search result');
         setShowMore(false);
       }
